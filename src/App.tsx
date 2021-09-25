@@ -1,26 +1,14 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { FC, Suspense } from 'react'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import Router from './routes'
+
+//TODO: ADD ErrorBoundary AND Suspense AND CUSTOM PATHS TO IMPORT
+const App: FC = () => {
+    return (
+        <Suspense fallback={<h1>Carregando...</h1>}>
+            <Router />
+        </Suspense>
+    )
 }
 
-export default App;
+export default App
