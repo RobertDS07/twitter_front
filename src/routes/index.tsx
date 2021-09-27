@@ -4,7 +4,7 @@ import { BrowserRouter, Switch, Route } from 'react-router-dom'
 
 import paths from './paths'
 
-import RestrictedRoute from './Components/RestrictedRoute'
+import RestrictedRoute from './components/RestrictedRoute'
 
 const LazyHomeScreen = lazy(() => import(`../screens/Home`))
 const LazyLoginScreen = lazy(() => import(`../screens/Login`))
