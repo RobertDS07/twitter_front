@@ -1,6 +1,8 @@
-import { FC, useContext } from 'react'
+import { FC } from 'react'
 
 import { Redirect, Route } from 'react-router'
+
+import { useAuthContext } from '../../contexts/AuthContext'
 
 import paths from '../paths'
 
@@ -17,7 +19,7 @@ const RestrictedRoute: FC<RestrictedRouteProps> = ({
     authorizedTypeUser,
     component: Component,
 }) => {
-    const { isLogged } = { isLogged: false }
+    const { isLogged } = useAuthContext()
 
     const onlyLoggedUsers = authorizedTypeUser === `logged`
 
