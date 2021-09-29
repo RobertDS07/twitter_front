@@ -1,8 +1,10 @@
 import { FC, createContext, useState, useContext } from 'react'
 
+import { Alert, AlertColor } from '@mui/material'
+
 interface showAlertProps {
     message: string
-    severity: `error` | `info` | `success`
+    severity: AlertColor
 
     timer?: number
 }
@@ -35,10 +37,18 @@ export const AlertProvider: FC = ({ children }) => {
         setTimeout(hideAlert, newAlertProps.timer)
     }
 
-    //CREATE YOUT Alert COMPONENT
     return (
         <AlertContext.Provider value={{ showAlert }}>
             {children}
+
+            {alertProps.visible && (
+                <Alert
+                    severity={alertProps.severity as AlertColor}
+                    onClose={hideAlert}
+                >
+                    {alertProps.message}
+                </Alert>
+            )}
         </AlertContext.Provider>
     )
 }
