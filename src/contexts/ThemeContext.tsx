@@ -1,19 +1,17 @@
 import { FC } from 'react'
 
-import {
-    CssBaseline,
-    createTheme,
-    ThemeProvider as MUIThemeProvider,
-} from '@mui/material'
+import { CssBaseline, ThemeProvider as MUIThemeProvider } from '@mui/material'
 
-const theme = createTheme({})
+import MuiTheme from '../styles/muiTheme'
 
-export const ThemeProvider: FC = ({ children }) => {
+const ThemeProvider: FC = ({ children }) => {
     return (
-        <MUIThemeProvider theme={theme}>
+        <MUIThemeProvider theme={MuiTheme()}>
             <CssBaseline />
 
             {children}
         </MUIThemeProvider>
     )
 }
+
+export { ThemeProvider }
