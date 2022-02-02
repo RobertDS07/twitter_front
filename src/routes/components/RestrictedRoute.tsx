@@ -23,6 +23,7 @@ const RestrictedRoute: FC<RestrictedRouteProps> = ({
 
     const onlyLoggedUsers = authorizedTypeUser === `logged`
 
+    // TODO: TRAZER O COMPONENTE DE LAYOUT PARA DENTRO DA ROTA PARA PODER USAR O COMPONENTE DA page COM SUSPENSE AQUI DENTRO PARA DAR EFEITO DE LOADING COM O HEADER APARECENDP
     return (
         <Route
             exact={exact}
