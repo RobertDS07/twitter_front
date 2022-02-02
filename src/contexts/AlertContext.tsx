@@ -1,54 +1,60 @@
 import { FC, createContext, useState, useContext } from 'react'
 
-import { Alert, AlertColor } from '@mui/material'
+import { Alert, AlertColor, Snackbar } from '@mui/material'
 
-interface showAlertProps {
-    message: string
-    severity: AlertColor
+interface IAlertProps {
+    timer: number
+    visible: boolean
 
-    timer?: number
+    message?: string
+    severity?: AlertColor
 }
 
+type ShowAlertProps = Required<Pick<IAlertProps, `message` | `severity`>> &
+    Partial<Pick<IAlertProps, `timer`>>
+
 interface AlertContext {
-    showAlert: (data: showAlertProps) => void
+    showAlert: (data: ShowAlertProps) => void
 }
 
 const DEFAULT_ALERT_PROPS = {
-    timer: 4000,
-    message: ``,
-    severity: ``,
+    timer: 5000,
     visible: false,
 }
 
 const AlertContext = createContext<AlertContext>({} as AlertContext)
 
-export const useAlert = () => useContext(AlertContext)
+const useAlert = () => useContext(AlertContext)
 
-export const AlertProvider: FC = ({ children }) => {
-    const [alertProps, setAlertProps] = useState(DEFAULT_ALERT_PROPS)
+const AlertProvider: FC = ({ children }) => {
+    const [alertProps, setAlertProps] =
+        useState<IAlertProps>(DEFAULT_ALERT_PROPS)
 
-    const hideAlert = () => setAlertProps(DEFAULT_ALERT_PROPS)
+    const hideAlert = () =>
+        setAlertProps(oldVal => ({ ...oldVal, ...DEFAULT_ALERT_PROPS }))
 
-    const showAlert = (data: showAlertProps) => {
+    const showAlert = (data: ShowAlertProps) => {
         const newAlertProps = { ...alertProps, ...data, visible: true }
 
         setAlertProps(newAlertProps)
-
-        setTimeout(hideAlert, newAlertProps.timer)
     }
 
     return (
         <AlertContext.Provider value={{ showAlert }}>
             {children}
 
-            {alertProps.visible && (
-                <Alert
-                    severity={alertProps.severity as AlertColor}
-                    onClose={hideAlert}
-                >
+            <Snackbar
+                onClose={hideAlert}
+                open={alertProps.visible}
+                autoHideDuration={alertProps.timer}
+                anchorOrigin={{ horizontal: `center`, vertical: `bottom` }}
+            >
+                <Alert onClose={hideAlert} severity={alertProps.severity}>
                     {alertProps.message}
                 </Alert>
-            )}
+            </Snackbar>
         </AlertContext.Provider>
     )
 }
+
+export { useAlert, AlertProvider }
