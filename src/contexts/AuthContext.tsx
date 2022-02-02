@@ -1,68 +1,90 @@
 import { createContext, useContext, useState, FC, useEffect } from 'react'
 
-import { useCookies } from 'react-cookie'
 import { useHistory } from 'react-router-dom'
+import Cookies from 'js-cookie'
 
 import { useAlert } from './AlertContext'
 
-import { doSignIn } from '../services/repository/authentication'
-import { verifyToken } from '../services/repository/check'
+import {
+    doSignIn,
+    doSignUp,
+    verifyToken,
+} from '../services/api/modules/authentication/repository'
+import {
+    PropsDoSignIn,
+    PropsDoSignUp,
+} from '../services/api/modules/authentication/types'
 
 import paths from '../routes/paths'
 
 import getRequestErrorMessage from '../utils/getRequestErrorMessage'
+import { getCredentials, setCredentials } from '../utils/cookies/credentials'
 
-import { User } from '../@types/interfaces/User'
+import { User } from '../services/api/@types/User'
 
 interface AuthContext {
-    user?: User
+    user: User | null
     isLogged: boolean
     handleSignOut: () => void
-    handleSignIn: (email: string, password: string) => Promise<void>
+    handleSignUp: (userData: PropsDoSignUp) => Promise<void>
+    handleSignIn: (userData: PropsDoSignIn) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContext>({} as AuthContext)
 
-export const useAuthContext = () => useContext(AuthContext)
+const useAuthContext = () => useContext(AuthContext)
 
-export const handleSignOut = () => {
-    const history = useHistory()
+const handleSignOut = () => {
+    Cookies.remove(`credentials`)
 
-    const [cookies, setCookies, removeCookie] = useCookies([`credentials`])
-
-    removeCookie(`credentials`)
-
-    history.push(paths.LOGIN)
+    // TODO: VERIFICAR MODO MELHOR DE FAZER O LOGOUT
+    // ATT: POSSÍVEL SOLUÇÃO (BroadcastChannel)
+    window.location.pathname = paths.LOGIN
 }
 
-export const AuthProvider: FC = ({ children }) => {
+const AuthProvider: FC = ({ children }) => {
     const alert = useAlert()
     const history = useHistory()
 
-    const [cookies, setCookies] = useCookies([`credentials`])
-
-    const [user, setUser] = useState<User>(cookies.credentials?.user)
+    const [user, setUser] = useState<User | null>(null)
 
     const isLogged = !!user
 
     useEffect(() => {
         ;(async () => {
-            if (!isLogged) return
+            const credentials = getCredentials()
 
-            const token = cookies.credentials.token
+            if (!credentials || !credentials.token) return
 
-            await verifyToken(token)
+            const res = await verifyToken()
+
+            const { user } = res.data
+
+            setUser(user)
         })()
     }, [])
 
-    const handleSignIn = async (
-        email: string,
-        password: string,
-    ): Promise<void> => {
+    const handleSignIn = async (userData: PropsDoSignIn) => {
         try {
-            const { data } = await doSignIn({ email, password })
+            const { data } = await doSignIn(userData)
 
-            setCookies(`credentials`, data)
+            setCredentials(data)
+
+            setUser(data.user)
+
+            history.push(paths.HOME)
+        } catch (err) {
+            const message = getRequestErrorMessage(err)
+
+            alert.showAlert({ message, severity: `error` })
+        }
+    }
+
+    const handleSignUp = async (userData: PropsDoSignUp) => {
+        try {
+            const { data } = await doSignUp(userData)
+
+            setCredentials(data)
 
             setUser(data.user)
 
@@ -76,9 +98,17 @@ export const AuthProvider: FC = ({ children }) => {
 
     return (
         <AuthContext.Provider
-            value={{ handleSignIn, handleSignOut, user, isLogged }}
+            value={{
+                user,
+                isLogged,
+                handleSignIn,
+                handleSignUp,
+                handleSignOut,
+            }}
         >
             {children}
         </AuthContext.Provider>
     )
 }
+
+export { AuthProvider, handleSignOut, useAuthContext }
